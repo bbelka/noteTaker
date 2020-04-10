@@ -1,8 +1,6 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const uuid = require('uuid/v1')
-const db = require(__dirname, '/db/db.json');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,42 +19,40 @@ app.get('/notes', (req, res) => {
 
 app.get('/api/notes', (req, res) => {
     const data = fs.readFileSync('./db/db.json');
-    // console.log('data: ' + data);
     Notes = data;
-    // console.log('Notes (get):' + Notes);
-
     const notes = JSON.parse(data);
-    // console.log('notes: ' + notes);
     res.json(notes);
 });
 
 app.post('/api/notes', (req, res) => {
     var newNote = req.body;
 
-    const newUUID = { "uuid": uuid };
-    console.log(newNote);
-    // newNote.unshift(newOBJ);
-    // newNote.push(newUUID);
-    // console.log(newNote);
-    console.log(newUUID);
-    
-
     fs.readFile('./db/db.json', function (err, data) {
         var json = JSON.parse(data)
+        const id = json[json.length - 1].id;
+        newNote.id = id + 1;
         json.push(newNote);
         fs.writeFileSync('./db/db.json', JSON.stringify(json))
     })
-
     res.json(newNote);
 });
 
-app.delete('/api/notes/:id', (reg, res)=> {
+app.delete('/api/notes/:id', (req, res) => {
     fs.readFile('./db/db.json', function (err, data) {
-        var json = JSON.parse(data)
-        //find note by id
-        //delete note
+        const json = JSON.parse(data);
+        console.log('json before: ' + json);
         
-        fs.writeFileSync('./db/db.json', JSON.stringify(json))
+        json.forEach(element => {
+            if (json.id === req.id){
+                const index = json.indexOf(element);
+                if (index > -1) {
+                    json.splice(index, 1);
+                }
+            }
+            console.log('json after: ' + json);
+        });
+        fs.writeFileSync('./db/db.json', JSON.stringify(json));
+        res.json(json);
     })
 })
 
